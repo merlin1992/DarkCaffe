@@ -282,9 +282,21 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network_state state,
     return;
 }
 
-void backward_convolutional_layer_gpu(convolutional_layer l, network_state state)
+void backward_convolutional_layer_gpu(convolutional_layer l, network_state state,int n)
 {
+    //l.bottom_dif,l.top_dif:need add this value to layer   
+    //l.top_dif:l.delta l.bottom_dif
     //constrain_ongpu(l.outputs*l.batch, 1, l.delta_gpu, 1);
+    //int bottom_size = l.batch*l.c*l.w*l.h;
+    //int top_size = l.batch*l.out_c*l.out_w*l.out_h;
+    //if(l.bottom_name == "data") {
+        //cudaMemcpy(l.bottom_data_gpu,state.input,sizeof(bottom_size)*float,cudaMemcpyDeviceToDevice);
+    //}
+    //else{
+        for(int i =0;i<state.net.n;i++){
+            if(state.net.layer[i].name == l.top_name) cudaMemcpy(l.delta_gpu, state.net.layer[i].delta_gpu, sizeof(top_size), cudaMemcpyDeviceToDevice);
+        }
+    //}
     gradient_array_ongpu(l.output_gpu, l.outputs*l.batch, l.activation, l.delta_gpu);
 
     backward_bias_gpu(l.bias_updates_gpu, l.delta_gpu, l.batch, l.n, l.out_w*l.out_h);
